@@ -44,22 +44,23 @@ def stat_summary(country, indicators):
 
 
 # indicators to investigate
-chosen_indicator = ['Terrestrial and marine protected areas (% of total territorial area)', 'Total greenhouse gas emissions (kt of CO2 equivalent)', 'Disaster risk reduction progress score (1-5 scale; 5=best)', 'Electric power consumption (kWh per capita)', 'Arable land (% of land area)','Energy use (kg of oil equivalent per capita)', 'Ease of doing business rank (1=most business-friendly regulations)' ]
+chosen_indicator = ['Terrestrial and marine protected areas (% of total territorial area)', 
+                    'Total greenhouse gas emissions (kt of CO2 equivalent)', 
+                    'Disaster risk reduction progress score (1-5 scale; 5=best)', 
+                    'Electric power consumption (kWh per capita)', 
+                    'Arable land (% of land area)',
+                    'Energy use (kg of oil equivalent per capita)', 
+                    'Ease of doing business rank (1=most business-friendly regulations)' ]
 
 UK_stat = stat_summary('United Kingdom', chosen_indicator)
-Germany_stat = stat_summary('Germany', chosen_indicator)
-Canada_stat = stat_summary('Canada', chosen_indicator)
-Saudi_stat = stat_summary('Saudi Arabia', chosen_indicator)
-Kenya_stat = stat_summary('Kenya', chosen_indicator)
-Brazil_stat = stat_summary('Brazil', chosen_indicator)
+Mexico_stat = stat_summary('Mexico', chosen_indicator)
 US_stat = stat_summary('United States', chosen_indicator)
-print(UK_stat, Germany_stat, Canada_stat,Saudi_stat,Kenya_stat,Brazil_stat, US_stat, sep='\n\n')
-
+print(UK_stat, Mexico_stat, US_stat, sep='\n')
 
 
 def comp_countries_stat(countries, indicator):
  
-    stat_country = list()
+    stat_country = []
     for country in countries:
         stat = trans_df[country].describe()[indicator]
         stat.name = country
@@ -77,11 +78,53 @@ power_consumption_stat = comp_countries_stat(countries, 'Electric power consumpt
 
 print(gdp_stat, power_consumption_stat, sep='\n' )
 
+#Lets investigate how the different indicators for climate change influence each other
+def plot_barchart(df, countries, indicator, start_year, end_year, increment):
+ 
+    
+    #filter dataframe to contain selected countries and indicator
+    newdf = df[df['Country Name'].isin(countries)]
+    newdf = newdf[newdf['Indicator Name'] == indicator]
+    
+    # To select year range between 1990 and 2015 for comparism among the countries.
+    year_range = [str(year) for year in range(start_year, end_year+1, increment)]
+    
+    newdf = newdf[['Country Name'] + year_range]
+    newdf.set_index('Country Name').plot.bar(figsize = (14,9)) 
+    plt.xlabel('Country',fontweight ='bold', fontsize = 14)
+    plt.ylabel(indicator,fontweight ='bold', fontsize = 14)
+    plt.title(indicator, fontsize = 14)
+    plt.savefig("bar chart.png")
+    
+
+# Plot trend of CO2 emission used from 1990 to 2015 at 5 years increment
+plot_barchart(orig_df, countries, 'CO2 emissions (kg per PPP $ of GDP)', 1990, 2015, 5)
+
+#line plot
+def plot_line(df, countries, indicator, start_year, end_year, increment):
+
+    newdf = df[df['Country Name'].isin(countries)]
+    newdf = newdf[newdf['Indicator Name'] == indicator]
+    
+    #filter a specific year if that argument were enter
+    if start_year or end_year:
+        newdf = newdf[['Country Name'] + [str(year) for year in range(start_year, end_year+1, increment)]]
+    
+    newdf = newdf.set_index('Country Name').iloc[:, 3:].T
+    print(newdf)
+    newdf.columns.name = None
+    
+    newdf.plot( figsize=(12, 9))
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.xlabel('Year',fontweight ='bold', fontsize = 16)
+    plt.ylabel(indicator,fontweight ='bold', fontsize = 16)
+    plt.title(indicator + ' trend', fontsize = 16)
+    plt.savefig("lINE PLOT.png")
+    plt.show()
 
 
+# check whether the trend for energy used is similar at the continent level (North America) and compare with another region
+location = countries + ['North America', 'Sub-Saharan Africa']
+plot_line(orig_df, location, 'Energy use (kg of oil equivalent per capita)', 1990, 2015, 5)
 
  
-
-
-
-
