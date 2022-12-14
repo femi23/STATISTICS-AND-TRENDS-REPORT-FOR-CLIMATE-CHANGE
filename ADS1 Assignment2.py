@@ -5,7 +5,9 @@ import scipy as sp
 
 # Libraries for data visualisation 
 import matplotlib.pyplot as plt
-import seaborn as sns
+import matplotlib
+
+
 
 
 #Define a function that reads, transposes the dataframe and modifies it.
@@ -211,17 +213,35 @@ def country_heatmap(df, country, indicators, start_year=None, end_year=None):
     corr_df.index.name = None
     
     
-    #set plot size and plot heatmap for correlation
-    plt.figure(figsize=(8,5))
+    #set plot size and plot heatmap of correlation
     corr = corr_df.corr()
-    sns.heatmap(corr, annot=True, linewidths=.2, cmap='coolwarm', vmin=-1, vmax=1)
-    plt.title(country,fontweight ='bold', fontsize = 16)
+    
+    
+    #plot heat map
+    fig, ax = plt.subplots(figsize=(9,8))
+    im = ax.imshow(corr, cmap="coolwarm")
+    cbar = ax.figure.colorbar(im, ax = ax, shrink=1 )
+    
+    # set x, y axis labels and rotate x-label by 90
+    ax.set_xticks(np.arange(len(corr.index.values)), labels=corr.index.values)
+    ax.set_yticks(np.arange(len(corr.columns.values)), labels=corr.columns.values)
+    plt.setp(ax.get_xticklabels(), rotation=90, ha="right", rotation_mode="anchor")
+    
+    #annotate data value on heat
+    for i in range(len(corr.columns.values)):
+        for j in range(len(corr.index.values)):
+            text = ax.text(j, i, round(corr.iloc[i, j], 2), ha="center", va="center", color="w")
+            
+    
+    plt.title(country,fontweight ='bold', fontsize = 18)
     plt.savefig("heatmap.png")
+
     
 # plot showing the correlation of energy use (kg of oil equivalent per capita) and other chosen indicators in USA and it's continent(North America)    
 Ind_explore = ['Urban population (% of total population)', 'Energy use (kg of oil equivalent per capita)', 'Total greenhouse gas emissions (kt of CO2 equivalent)', 'Renewable energy consumption (% of total final energy consumption)', 'Forest area (% of land area)', 'CO2 emissions (metric tons per capita)', 'Agricultural land (% of land area)'] 
 country_heatmap(orig_df, 'United States', Ind_explore)
 country_heatmap(orig_df, 'North America', Ind_explore)
+
 
 # function to pass selected countries and countries with highest renewable energy use.
 def get_table(df, countries, indicator):
